@@ -29,6 +29,5 @@ A compact, bidirectional editor for sigma schedules in diffusion sampling.
 | `js/SigmaGraphWidget.js` | Custom graph widget UI (drag, sync, presets)         |
 
 ## Screenshots
-![Graph Editing](screenie1.png)
 ![sreenie1](https://github.com/user-attachments/assets/ae30f0b1-d3b6-42cb-85ff-075acd5f3abf)
 ![sreenie2](https://github.com/user-attachments/assets/8a834015-a469-4d17-a3b4-cc8f73178525)
