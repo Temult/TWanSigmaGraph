@@ -31,7 +31,7 @@ A compact, bidirectional editor for sigma schedules in diffusion sampling.
 ## Screenshots
 
 ### 🖱️ Drag to shape your sigma schedule
-![Graph Editing](./screenie1.png)
+![Graph Editing](screenie1.png)
 
 ### ✍️ Textbox input and syncing
 ![Text Input](./screenie2.png)
