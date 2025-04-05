@@ -1,0 +1,14 @@
+[project]
+name = "sigma-graph-node"
+description = "A ComfyUI node for interactively editing sigma schedules via graph and text."
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/Temult/sigma-graph-node"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "sigma-graph-node"
+Icon = ""
