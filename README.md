@@ -27,3 +27,11 @@ A compact, bidirectional editor for sigma schedules in diffusion sampling.
 | `__init__.py`            | Registers the node and loads the front-end widget    |
 | `SigmaGraphNode.py`      | Backend logic: interpolates a sigma tensor schedule  |
 | `js/SigmaGraphWidget.js` | Custom graph widget UI (drag, sync, presets)         |
+
+## Screenshots
+
+### 🖱️ Drag to shape your sigma schedule
+![Graph Editing](./screenie1.png)
+
+### ✍️ Textbox input and syncing
+![Text Input](./screenie2.png)
