@@ -9,11 +9,6 @@ A compact, bidirectional editor for sigma schedules in diffusion sampling.
 - 🔁 Click ▼ to apply text changes to the graph
 - 💾 Save/load custom curve presets
 
-## Thanks
-- Special thanks to Realistic_Studio_930 for introducing me to sigma schedules and inspiring the graph.
-- Special thanks as well to huchenlei for graciously helping review and guide the js portion of this code
-- Special thanks to Google and OpenAI - Gemini 2.5 Pro and ChatGPT o1/o3-mini(high) were utilized during this project
-
 ## Installation
 
 1. Copy this folder to: `ComfyUI/custom_nodes/sigma_graph`
@@ -26,6 +21,11 @@ A compact, bidirectional editor for sigma schedules in diffusion sampling.
 2. Use the graph or text box to shape the sigma curve
 3. Connect the output (`SIGMAS`) to a sampler that supports external schedules (e.g., KSampler)
 4. (Optional) Use the 💾 button to toggle save mode and store/load your favorite curves
+
+## Thanks
+- Special thanks to Realistic_Studio_930 for introducing me to sigma schedules and inspiring the graph.
+- Special thanks as well to huchenlei for graciously helping review and guide the js portion of this code
+- Special thanks to Google and OpenAI - Gemini 2.5 Pro and ChatGPT o1/o3-mini(high) were utilized during this project
 
 ## File Overview
 
