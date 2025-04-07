@@ -1,3 +1,5 @@
+Edit: On first load, the node may render incorrectly. If empty, please refresh page until I can track down the cause.
+
 # Sigma Graph Node for ComfyUI
 
 A compact, bidirectional editor for sigma schedules in diffusion sampling.
