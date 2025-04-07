@@ -728,14 +728,55 @@ app.registerExtension({
       });
     };
 
-    // Patch onRemoved to clean up the widget
+        // Patch onRemoved to clean up the widget
     const originalOnRemoved = nodeType.prototype.onRemoved;
     nodeType.prototype.onRemoved = function () {
-      const graphWidget = this.widgets?.find((w) => w.name === graphWidgetName);
-      if (graphWidget && graphWidget.onRemoved) {
-        graphWidget.onRemoved();
+      // --- Defensive Check ---
+      // Check if 'this' is valid and has 'widgets' before proceeding.
+      if (!this || !this.widgets) {
+        // Log a warning to the console so you know this happened.
+        console.warn(
+          "[SigmaGraphWidget] onRemoved called with invalid context or missing widgets. Skipping custom cleanup.",
+          this // Log the problematic 'this' value if needed
+        );
+        // Attempt to call the original onRemoved if it exists,
+        // passing whatever 'this' context we received (even if undefined).
+        if (originalOnRemoved) {
+          try {
+            // Use Reflect.apply for safer calling if 'this' might be totally invalid
+            Reflect.apply(originalOnRemoved, this, []);
+          } catch (e) {
+            console.error(
+              "[SigmaGraphWidget] Error calling original onRemoved:",
+              e
+            );
+          }
+        }
+        return; // Exit the function early to prevent the TypeError
       }
-      if (originalOnRemoved) originalOnRemoved.call(this);
+      // --- End Defensive Check ---
+
+      // If the check passed, 'this' and 'this.widgets' should be valid
+      const graphWidget = this.widgets.find((w) => w.name === graphWidgetName); // Can remove ?. now
+      if (graphWidget && graphWidget.onRemoved) {
+        // Ensure the widget's own onRemoved exists and call it
+        graphWidget.onRemoved();
+      } else if (graphWidget) {
+        // Fallback cleanup if widget.onRemoved wasn't assigned correctly
+        console.warn(
+          "[SigmaGraphWidget] graphWidget found, but widget.onRemoved is missing. Performing fallback cleanup."
+        );
+        if (graphWidget.resizeObserver) {
+          graphWidget.resizeObserver.disconnect();
+          graphWidget.resizeObserver = null;
+        }
+        // Add any other manual cleanup needed here if widget.onRemoved fails
+      }
+
+      // Call the original function with the (now assumed valid) 'this' context
+      if (originalOnRemoved) {
+        originalOnRemoved.call(this);
+      }
     };
   },
 
