@@ -1,0 +1,15 @@
+[project]
+name = "SigmaGraphNode"
+description = ""
+version = "0.1.0-alpha"
+license = {file = "LICENSE.txt"}
+dependencies = ["# requirements.txt for SigmaGraphNode", "# This custom node requires PyTorch to create the sigma schedule tensor.", "torch>=2.6.0"]
+
+[project.urls]
+Repository = "https://github.com/Temult/SigmaGraphNode"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "temult"
+DisplayName = "ComfyUI"
+Icon = "https://i.imgur.com/eysFHSU.png"

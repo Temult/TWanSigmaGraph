@@ -1,213 +1,170 @@
 # Import necessary libraries
-import json  # For parsing the graph data string from the UI
-import torch # For creating the final tensor output
+import json
+import torch
+import math # Import math for isnan
 
-# Define the main node class
 class SigmaGraphNode:
     """
     A ComfyUI node that generates a sigma schedule tensor based on user-defined
-    points edited via a custom graph widget in the UI. The schedule typically
-    decreases from high sigma (noise) to low sigma.
+    points edited via a custom graph widget in the UI. It also outputs the
+    number of steps used. The schedule typically decreases from high sigma
+    (noise) to low sigma.
     """
+    # Define a small epsilon for floating point comparisons
+    EPSILON = 1e-6
 
     @classmethod
     def INPUT_TYPES(cls):
-        """
-        Specifies the inputs the node requires in the ComfyUI interface.
-        """
-        # Define the default shape of the graph (linear descent) as a JSON string.
-        # This is used if no data is loaded or provided.
         default_points = json.dumps([
-            {"x": 0.0, "y": 1.0}, # Start point (step 0, progress 0.0) -> High Sigma
-            {"x": 1.0, "y": 0.0}  # End point (step N, progress 1.0) -> Low Sigma
+            {"x": 0.0, "y": 1.0},
+            {"x": 1.0, "y": 0.0}
         ])
         return {
             "required": {
-                # 'steps': The number of diffusion steps the schedule is for.
-                # The output sigma tensor will have 'steps + 1' values.
                 "steps": ("INT", {
-                    "default": 20,
-                    "min": 1,    # Must have at least 1 step
-                    "max": 1000, # Reasonable upper limit for steps
+                    "default": 20, "min": 1, "max": 1000,
                 }),
-                # 'graph_data': A JSON string representing the list of points [{x, y}, ...].
-                # This input uses a custom widget named 'sigma_graph' (defined in JS).
-                # 'forceInput: False' allows using the default or connecting an input.
+                # 'graph_data': JSON string representing points [{x, y}, ...].
+                # This is now primarily for storing the state set by the JS widget.
+                # It no longer has a 'widget' association in Python.
                 "graph_data": ("STRING", {
                     "default": default_points,
-                    "widget": "sigma_graph", # Links to the custom JS widget
-                    "multiline": True,       # Allows the widget to potentially use more space
-                    "forceInput": False,     # Allows using the default value
+                    "multiline": True, # Keep multiline for easier debugging if needed
                 }),
             },
         }
 
-    # Define the output type and name
-    RETURN_TYPES = ("SIGMAS",) # Standard ComfyUI type for sigma schedules
-    RETURN_NAMES = ("sigmas",) # Name of the output slot in the UI
-
-    # Specify the function to execute when the node runs
+    RETURN_TYPES = ("SIGMAS", "INT",)
+    RETURN_NAMES = ("sigmas", "steps",)
     FUNCTION = "calculate_sigmas"
+    CATEGORY = "sampling/custom_sampling"
 
-    # Define the category under which the node appears in the Add Node menu
-    CATEGORY = "sampling/custom_sampling" # Or your preferred category
+    def _validate_and_clean_points(self, points_data_str):
+        """ Parses, validates, and cleans the points data. """
+        points = []
+        default_points_list = [{"x": 0.0, "y": 1.0}, {"x": 1.0, "y": 0.0}]
+        try:
+            points_data = json.loads(points_data_str)
+            if not isinstance(points_data, list):
+                raise ValueError("Graph data is not a list.")
+
+            # Filter for valid point structure and numeric types, check for NaN/Infinity
+            valid_points = []
+            for p in points_data:
+                if isinstance(p, dict) and 'x' in p and 'y' in p and \
+                   isinstance(p['x'], (int, float)) and not math.isnan(p['x']) and not math.isinf(p['x']) and \
+                   isinstance(p['y'], (int, float)) and not math.isnan(p['y']) and not math.isinf(p['y']):
+                    valid_points.append({"x": float(p['x']), "y": float(p['y'])}) # Ensure float type
+                else:
+                    print(f"[SigmaGraphNode Warning] Ignoring invalid point data: {p}")
+
+            points = valid_points
+            if len(points) != len(points_data):
+                 print("[SigmaGraphNode Warning] Some points in graph_data were invalid and ignored.")
+
+        except (json.JSONDecodeError, ValueError, TypeError) as e:
+            print(f"[SigmaGraphNode Warning] Invalid graph_data input: {e}. Using default points.")
+            return default_points_list # Return default on parse error
+
+        if not points:
+             print("[SigmaGraphNode Warning] No valid points found after filtering. Using default points.")
+             return default_points_list
+
+        # Ensure boundary points exist using a tolerance
+        has_start = any(abs(p['x'] - 0.0) < self.EPSILON for p in points)
+        has_end = any(abs(p['x'] - 1.0) < self.EPSILON for p in points)
+
+        if not has_start:
+            # Find point closest to x=0 to determine y-value, or default to 1.0
+            start_y = min(points, key=lambda p: abs(p['x'] - 0.0))['y'] if points else 1.0
+            points.append({"x": 0.0, "y": start_y})
+            print("[SigmaGraphNode Info] Added missing start point (x=0).")
+        if not has_end:
+            # Find point closest to x=1 to determine y-value, or default to 0.0
+            end_y = min(points, key=lambda p: abs(p['x'] - 1.0))['y'] if points else 0.0
+            points.append({"x": 1.0, "y": end_y})
+            print("[SigmaGraphNode Info] Added missing end point (x=1).")
+
+        # Sort points by x-coordinate
+        points.sort(key=lambda p: p["x"])
+
+        # Remove duplicate points based on x-coordinate with tolerance
+        unique_points = []
+        if points:
+            unique_points.append(points[0])
+            last_x = points[0]['x']
+            for i in range(1, len(points)):
+                if abs(points[i]["x"] - last_x) > self.EPSILON:
+                    unique_points.append(points[i])
+                    last_x = points[i]['x']
+                else:
+                     print(f"[SigmaGraphNode Warning] Removing duplicate point near x={points[i]['x']}.")
+
+
+        # Ensure minimum number of points (e.g., 2 for interpolation)
+        if len(unique_points) < 2:
+             print("[SigmaGraphNode Warning] Not enough unique points after cleanup. Using default points.")
+             return default_points_list
+
+        return unique_points
 
     def calculate_sigmas(self, steps, graph_data):
         """
-        Calculates a sigma schedule tensor (torch.Tensor) with 'steps + 1' values.
-
-        The schedule is generated by linearly interpolating between the control points
-        defined in the 'graph_data' JSON string. It assumes the graph represents
-        sigma values (y-axis) over normalized step progress (x-axis, 0.0 to 1.0).
-
-        Args:
-            steps (int): The number of sampling steps requested.
-            graph_data (str): A JSON string representing a list of points, e.g.,
-                              '[{"x": 0.0, "y": 1.0}, {"x": 1.0, "y": 0.0}]'.
-
-        Returns:
-            tuple: A tuple containing a single element: the calculated sigma
-                   schedule as a torch.Tensor of dtype float32.
+        Calculates a sigma schedule tensor and returns it along with the steps.
         """
-        # --- Input Validation and Parsing ---
-        points = [] # Initialize empty list for points
-        try:
-            # Attempt to parse the JSON string from the input/widget
-            points_data = json.loads(graph_data)
-            # Ensure the parsed data is a list
-            if not isinstance(points_data, list):
-                raise ValueError("Graph data is not a list.")
-            # Filter out any invalid point entries (must be dict with 'x' and 'y')
-            points = [p for p in points_data if isinstance(p, dict) and 'x' in p and 'y' in p]
-            # Warn if some points were filtered out
-            if len(points) != len(points_data):
-                 print("[SigmaGraphNode Warning] Some points in graph_data were invalid and ignored.")
-        except (json.JSONDecodeError, ValueError, TypeError) as e:
-            # Catch potential errors during parsing or validation
-            print(f"[SigmaGraphNode Warning] Invalid graph_data input: {e}. Using linear fallback.")
-            # Ensure points is empty to trigger fallback logic below
-            points = []
-
-        # Determine the required number of sigma values (N steps need N+1 sigmas)
-        num_sigmas = steps + 1
-
-        # --- Fallback Logic ---
-        # If parsing failed, or not enough points were provided for interpolation
-        if not points or len(points) < 2:
-            print("[SigmaGraphNode Info] Using linear sigma schedule fallback.")
-            # Generate a simple linear schedule descending from 1.0 to near 0.0
-            # Avoid division by zero if steps = 0 (though input min is 1)
-            denominator = steps if steps > 0 else 1
-            # Calculate sigma values using list comprehension
-            sigma_values = [max(0.001, 1.0 - (i / denominator)) for i in range(num_sigmas)]
-            # Convert the list to a PyTorch tensor
-            sigmas_tensor = torch.tensor(sigma_values, dtype=torch.float32)
-            # Provide debug output showing the first few values
-            print(f"[SigmaGraphNode Debug] Fallback Sigmas (first 5): {sigmas_tensor[:5]}...")
-            # Return the tensor in a tuple as required by ComfyUI
-            return (sigmas_tensor,)
-
-        # --- Interpolation Logic ---
-        # Sort the valid points by their x-coordinate (step progress)
-        points.sort(key=lambda p: p["x"])
-
-        # Ensure boundary points exist at x=0 and x=1 for complete interpolation.
-        # This guarantees the schedule covers the entire range [0.0, 1.0].
-        if points[0]["x"] > 0:
-            # If the first point doesn't start at x=0, prepend a point at x=0
-            # using the y-value of the original first point.
-            points.insert(0, {"x": 0.0, "y": points[0]["y"]})
-        if points[-1]["x"] < 1:
-            # If the last point doesn't end at x=1, append a point at x=1
-            # using the y-value of the original last point.
-            points.append({"x": 1.0, "y": points[-1]["y"]})
-
-        # Remove duplicate points based on x-coordinate, keeping the first occurrence.
-        # This prevents issues during interpolation if points overlap vertically.
-        unique_points = []
-        seen_x = set()
-        for p in points:
-            if p["x"] not in seen_x:
-                unique_points.append(p)
-                seen_x.add(p["x"])
-        points = unique_points
-
-        # Check again if we have enough unique points after cleanup
-        if len(points) < 2:
-             print("[SigmaGraphNode Warning] Not enough unique points after cleanup. Using linear fallback.")
-             denominator = steps if steps > 0 else 1
-             sigma_values = [max(0.001, 1.0 - (i / denominator)) for i in range(num_sigmas)]
-             sigmas_tensor = torch.tensor(sigma_values, dtype=torch.float32)
-             print(f"[SigmaGraphNode Debug] Fallback Sigmas (first 5): {sigmas_tensor[:5]}...")
-             return (sigmas_tensor,)
+        steps = max(1, int(steps))
+        points = self._validate_and_clean_points(graph_data)
+        num_sigmas_to_generate = steps
 
         # --- Perform Interpolation ---
-        sigma_values = []          # List to store calculated sigma values
-        current_point_idx = 0    # Index of the starting point for the current segment
+        sigma_values = []
+        current_point_idx = 0
 
-        # Iterate to generate each required sigma value
-        for i in range(num_sigmas):
-            # Calculate the normalized progress for the current sigma index (0 to steps)
-            # Avoid division by zero if steps = 0
-            step_progress = i / steps if steps > 0 else 0.0
+        # Handle steps = 1 case separately for clarity
+        if steps == 1:
+             # Find point at x=0
+             start_point = next((p for p in points if abs(p['x'] - 0.0) < self.EPSILON), points[0])
+             sigma_values.append(max(0.001, start_point['y']))
+        else:
+            for i in range(num_sigmas_to_generate):
+                step_progress = i / (steps - 1)
+                step_progress = min(1.0, max(0.0, step_progress)) # Clamp progress [0, 1]
 
-            # Advance the starting point index (`current_point_idx`) if the
-            # `step_progress` has moved past the *next* point's x-coordinate.
-            # This finds the correct segment [p1, p2] for the current `step_progress`.
-            # We use '<' to ensure that if step_progress lands exactly on a point,
-            # we use the segment starting *at* that point.
-            while (current_point_idx < len(points) - 2 and
-                   points[current_point_idx + 1]["x"] < step_progress):
-                current_point_idx += 1
+                # Find the correct segment [p1, p2] for interpolation
+                # Advance index while the *next* point's x is less than current progress
+                while (current_point_idx < len(points) - 2 and
+                       points[current_point_idx + 1]["x"] < step_progress - self.EPSILON):
+                    current_point_idx += 1
 
-            # Get the pair of points defining the current segment for interpolation
-            p1 = points[current_point_idx]
-            # Ensure p2 is the next point, or clamp to the last point if already there
-            p2 = points[min(current_point_idx + 1, len(points) - 1)]
+                p1 = points[current_point_idx]
+                # Ensure p2 is the next point, or clamp to the last point if already there
+                p2 = points[min(current_point_idx + 1, len(points) - 1)]
 
-            # Calculate the difference in x-coordinates for the segment
-            x_diff = p2["x"] - p1["x"]
+                x_diff = p2["x"] - p1["x"]
+                sigma = 0.0
 
-            # Perform linear interpolation (lerp) between p1.y and p2.y
-            sigma = 0.0
-            if x_diff <= 1e-6: # Use a small epsilon to handle floating point comparison
-                # If points have the same x-coordinate (or are extremely close),
-                # avoid division by zero. Choose the y-value based on which point
-                # the step_progress is closer to (or use p1's y if exactly on p1).
-                if step_progress <= p1["x"] or abs(step_progress - p1["x"]) < abs(step_progress - p2["x"]):
-                     sigma = p1["y"]
+                # Check for vertical segment or identical points
+                if x_diff <= self.EPSILON:
+                    # If progress is closer to p2.x, use p2.y, otherwise use p1.y
+                    sigma = p2["y"] if abs(step_progress - p2["x"]) < abs(step_progress - p1["x"]) else p1["y"]
                 else:
-                     sigma = p2["y"]
-            else:
-                # Calculate the interpolation factor (ratio) within the segment
-                ratio = (step_progress - p1["x"]) / x_diff
-                # Clamp ratio to [0, 1] to prevent extrapolation due to float errors
-                ratio = max(0.0, min(1.0, ratio))
-                # Calculate the interpolated sigma value
-                sigma = p1["y"] + ratio * (p2["y"] - p1["y"])
+                    # Standard linear interpolation
+                    # Clamp progress to the segment bounds before calculating ratio
+                    clamped_progress = max(p1["x"], min(p2["x"], step_progress))
+                    ratio = (clamped_progress - p1["x"]) / x_diff
+                    # Ensure ratio is valid [0, 1] due to potential float errors
+                    ratio = max(0.0, min(1.0, ratio))
+                    sigma = p1["y"] + ratio * (p2["y"] - p1["y"])
 
-            # Clamp the calculated sigma to a minimum value (e.g., 0.001).
-            # This prevents issues with log(0) or division by zero in some samplers.
-            # 0.0 might also be acceptable depending on the specific sampler used later.
-            sigma_values.append(max(0.001, sigma))
+                # Ensure sigma is positive and non-zero
+                sigma_values.append(max(0.001, sigma))
 
         # Convert the final list of sigma values to a PyTorch tensor
         sigmas_tensor = torch.tensor(sigma_values, dtype=torch.float32)
 
-        # Provide debug output showing the first few calculated values
-        print(f"[SigmaGraphNode Debug] Calculated Sigmas (first 5): {sigmas_tensor[:5]}...")
+        # print(f"[SigmaGraphNode Debug] Calculated Sigmas ({len(sigma_values)} values, first 5): {sigmas_tensor[:5]}...")
+        return (sigmas_tensor, steps,)
 
-        # Return the result as a tuple containing the tensor
-        return (sigmas_tensor,)
-
-# --- Node Registration for ComfyUI ---
-
-# Map the Python class to the node's internal name
-NODE_CLASS_MAPPINGS = {
-    "SigmaGraphNode": SigmaGraphNode
-}
-
-# (Optional) Map the internal name to a user-friendly display name in the UI
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "SigmaGraphNode": "Sigma Schedule Graph"
-}
+# --- Node Registration ---
+NODE_CLASS_MAPPINGS = { "SigmaGraphNode": SigmaGraphNode }
+NODE_DISPLAY_NAME_MAPPINGS = { "SigmaGraphNode": "Sigma Schedule Graph" }
