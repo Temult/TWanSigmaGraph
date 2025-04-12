@@ -9,6 +9,8 @@ Prototype - Node is in early development, not intended for active use.
 - 🔁 **Apply Changes:** Click the ▼ button to apply text changes to the graph.
 - 💾 **Presets:** Save/load custom curve presets with the 💾 button.
 
+![screen1](https://github.com/user-attachments/assets/5de063e7-8034-4827-b48e-308af790de91)
+
 > **Note:** On first load the node's UI may render incorrectly (it may appear empty). If this happens, please refresh the page until the issue is resolved. This is a known alpha-stage bug that will be addressed in future updates.
 
 ## Installation
@@ -22,6 +24,8 @@ Prototype - Node is in early development, not intended for active use.
    In the ComfyUI interface, find **SigmaGraphNode** under the **sampling → custom** category.
 
 ## How to Use
+
+![screen2](https://github.com/user-attachments/assets/571a47bb-d376-48c2-9bdc-0a70eec291ea)
 
 1. **Set Steps:**  
    Adjust the `steps` input to define the number of sampling steps. The output sigma tensor will contain `steps + 1` values.
