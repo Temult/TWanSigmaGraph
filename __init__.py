@@ -2,10 +2,12 @@
 
 from .TWanSigmaGraph import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
-WEB_DIRECTORY = "./js"  # Serve .js files in the "js" folder as an extension
+WEB_DIRECTORY = "./js"
+NODE_DISPLAY_NAME_MAPPINGS = {}
 
 __all__ = [
     "NODE_CLASS_MAPPINGS",
     "NODE_DISPLAY_NAME_MAPPINGS",
     "WEB_DIRECTORY",
 ]
+
