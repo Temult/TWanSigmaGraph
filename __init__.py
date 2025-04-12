@@ -1,4 +1,4 @@
-# __init__.py in your TWanSigmaGraph folder
+# __init__.py
 
 from .TWanSigmaGraph import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
