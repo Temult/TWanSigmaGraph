@@ -1,6 +1,9 @@
-# __init__.py
-from .SigmaGraphNode import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
-WEB_DIRECTORY = "./js"
+# __init__.py in your TWanSigmaGraph folder
+
+from .TWanSigmaGraph import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+
+WEB_DIRECTORY = "./js"  # Serve .js files in the "js" folder as an extension
+
 __all__ = [
     "NODE_CLASS_MAPPINGS",
     "NODE_DISPLAY_NAME_MAPPINGS",
