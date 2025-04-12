@@ -1,4 +1,4 @@
-# Sigma Graph Node for ComfyUI
+# Sigma Graph Node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) and [Wan-Video](https://github.com/Wan-Video)
 
 Prototype - Node is in early development, not intended for active use. 
 
