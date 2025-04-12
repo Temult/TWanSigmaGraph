@@ -1,6 +1,6 @@
 # Sigma Graph Node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) and [Wan-Video](https://github.com/Wan-Video)
 
-Prototype - Node is in early development, not intended for active use. 
+__Prototype - Node is in early development, not intended for active use.__ 
 
 **A compact, bidirectional editor for sigma schedules used in diffusion sampling.**
 
@@ -17,7 +17,7 @@ Prototype - Node is in early development, not intended for active use.
 
 1. **Copy the Folder:**  
    Copy this folder to your ComfyUI custom nodes directory:  
-   `ComfyUI/custom_nodes/sigma_graph`
+   `ComfyUI/custom_nodes/TWanSigmaGraph`
 2. **Restart ComfyUI:**  
    Restart ComfyUI so that it can register the new node.
 3. **Locate the Node:**  
@@ -42,11 +42,11 @@ Prototype - Node is in early development, not intended for active use.
 
 ## File Overview
 
-| File                     | Purpose                                                   |
-|--------------------------|-----------------------------------------------------------|
-| `__init__.py`            | Registers the node and instructs ComfyUI where to find the widget code  |
-| `SigmaGraphNode.py`      | Contains the backend logic to generate the sigma tensor schedule  |
-| `js/SigmaGraphWidget.js` | Implements the custom graph widget UI (drag, sync, and presets)       |
+| File                         | Purpose                                                                |
+|------------------------------|------------------------------------------------------------------------|
+| `__init__.py`                | Registers the node and instructs ComfyUI where to find the widget code |
+| `TWanSigmaGraph.py`          | Contains the backend logic to generate the sigma tensor schedule       |
+| `js/TWanSigmaGraphWidget.js` | Implements the custom graph widget UI (drag, sync, and presets)        |
 
 ## Troubleshooting
 
