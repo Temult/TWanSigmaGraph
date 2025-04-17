@@ -77,7 +77,7 @@ Node will automatically extrapolate schedule to desired step count and save for 
    To reset, clear the node’s cache in your browser’s `localStorage`.
 
 7. **Connect to Sampler**  
-   Plug the `SIGMAS` output into any sampler that accepts custom sigma schedules (e.g. KSampler).
+   Plug the `SIGMAS` output into any sampler that accepts custom sigma schedules (e.g. [TWanSigmaSampler](https://github.com/Temult/TWanSigmaSampler)).
 
 ---
 
