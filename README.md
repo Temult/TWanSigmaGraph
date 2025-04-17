@@ -5,9 +5,9 @@ Shape a high‑resolution schedule by defining just a handful of control points�
 
 ## Why low‑point curves matter
 
-• Sketch your noise schedule with just a handful of points. Refine the shape quickly!
-• When you bump `steps` up to 35, 100, or more, the node interpolates your low‑point profile into a full sigma list for your sampler.  
-• No need to manually adjust dozens of numbers or sliders. Design your conceptual curve once and use for any number of steps!
+• Sketch your noise schedule with just a handful of points. Refine the shape quickly!  
+• When you bump `steps` up to 35, 100, or more, the node interpolates your low‑point profile into a full sigma list for your sampler.   
+• No need to manually adjust dozens of numbers or sliders. Design your conceptual curve once and use for any number of steps!  
 
 ---
 
