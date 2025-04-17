@@ -1,9 +1,9 @@
 # Sigma Schedule Graph Node for ComfyUI & Wan‑Video
 
-A compact, bidirectional sigma‐schedule editor for diffusion sampling.
-Sketch your noise schedule with just a handful of points. Refine the shape quickly.
+A compact, bidirectional sigma‐schedule editor for diffusion sampling.  
+Sketch your noise schedule with just a handful of points. Refine the shape quickly.  
 Design your conceptual curve once and use for any number of steps!  
-Node will automatically extrapolate schedule to desired step count and save for later. 
+Node will automatically extrapolate schedule to desired step count and save for later.  
 
 ---
 
