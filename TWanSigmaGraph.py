@@ -3,7 +3,7 @@ import json
 import torch
 import math # Import math for isnan
 
-class SigmaGraphNode:
+class TWanSigmaGraph:
     """
     A ComfyUI node that generates a sigma schedule tensor based on user-defined
     points edited via a custom graph widget in the UI. It also outputs the
@@ -56,18 +56,18 @@ class SigmaGraphNode:
                    isinstance(p['y'], (int, float)) and not math.isnan(p['y']) and not math.isinf(p['y']):
                     valid_points.append({"x": float(p['x']), "y": float(p['y'])}) # Ensure float type
                 else:
-                    print(f"[SigmaGraphNode Warning] Ignoring invalid point data: {p}")
+                    print(f"[TWanSigmaGraph Warning] Ignoring invalid point data: {p}")
 
             points = valid_points
             if len(points) != len(points_data):
-                 print("[SigmaGraphNode Warning] Some points in graph_data were invalid and ignored.")
+                 print("[TWanSigmaGraph Warning] Some points in graph_data were invalid and ignored.")
 
         except (json.JSONDecodeError, ValueError, TypeError) as e:
-            print(f"[SigmaGraphNode Warning] Invalid graph_data input: {e}. Using default points.")
+            print(f"[TWanSigmaGraph Warning] Invalid graph_data input: {e}. Using default points.")
             return default_points_list # Return default on parse error
 
         if not points:
-             print("[SigmaGraphNode Warning] No valid points found after filtering. Using default points.")
+             print("[TWanSigmaGraph Warning] No valid points found after filtering. Using default points.")
              return default_points_list
 
         # Ensure boundary points exist using a tolerance
@@ -78,12 +78,12 @@ class SigmaGraphNode:
             # Find point closest to x=0 to determine y-value, or default to 1.0
             start_y = min(points, key=lambda p: abs(p['x'] - 0.0))['y'] if points else 1.0
             points.append({"x": 0.0, "y": start_y})
-            print("[SigmaGraphNode Info] Added missing start point (x=0).")
+            print("[TWanSigmaGraph Info] Added missing start point (x=0).")
         if not has_end:
             # Find point closest to x=1 to determine y-value, or default to 0.0
             end_y = min(points, key=lambda p: abs(p['x'] - 1.0))['y'] if points else 0.0
             points.append({"x": 1.0, "y": end_y})
-            print("[SigmaGraphNode Info] Added missing end point (x=1).")
+            print("[TWanSigmaGraph Info] Added missing end point (x=1).")
 
         # Sort points by x-coordinate
         points.sort(key=lambda p: p["x"])
@@ -98,12 +98,12 @@ class SigmaGraphNode:
                     unique_points.append(points[i])
                     last_x = points[i]['x']
                 else:
-                     print(f"[SigmaGraphNode Warning] Removing duplicate point near x={points[i]['x']}.")
+                     print(f"[TWanSigmaGraph Warning] Removing duplicate point near x={points[i]['x']}.")
 
 
         # Ensure minimum number of points (e.g., 2 for interpolation)
         if len(unique_points) < 2:
-             print("[SigmaGraphNode Warning] Not enough unique points after cleanup. Using default points.")
+             print("[TWanSigmaGraph Warning] Not enough unique points after cleanup. Using default points.")
              return default_points_list
 
         return unique_points
@@ -162,9 +162,9 @@ class SigmaGraphNode:
         # Convert the final list of sigma values to a PyTorch tensor
         sigmas_tensor = torch.tensor(sigma_values, dtype=torch.float32)
 
-        # print(f"[SigmaGraphNode Debug] Calculated Sigmas ({len(sigma_values)} values, first 5): {sigmas_tensor[:5]}...")
+        # print(f"[TWanSigmaGraph Debug] Calculated Sigmas ({len(sigma_values)} values, first 5): {sigmas_tensor[:5]}...")
         return (sigmas_tensor, steps,)
 
 # --- Node Registration ---
-NODE_CLASS_MAPPINGS = { "SigmaGraphNode": SigmaGraphNode }
-NODE_DISPLAY_NAME_MAPPINGS = { "SigmaGraphNode": "Sigma Schedule Graph" }
+NODE_CLASS_MAPPINGS = { "TWanSigmaGraph": TWanSigmaGraph }
+NODE_DISPLAY_NAME_MAPPINGS = { "TWanSigmaGraph": "Sigma Schedule Graph" }
