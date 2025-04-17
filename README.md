@@ -15,17 +15,17 @@ Shape a high‑resolution schedule by defining just a handful of control points�
 
 - 🎨 **Interactive Graph**  
   Drag handles to shape your sigma curve.  
-  • ➕ to add new graph point for fine tuning 
-  • ➖ to remove one graph point.
+  ➕ to add new graph point for fine tuning 
+  ➖ to remove one graph point.
 
 - ✍️ **Textual Workspace**  
   The top textarea shows your control‑point y‑values.  
-  • Paste comma lists or full JSON point arrays.  
-  • Textual edits auto‑sync to the graph.
+  Paste comma lists or full JSON point arrays.  
+  Textual edits auto‑sync to the graph.
 
 - 🔄 **Dynamic Extrapolation**  
-  The bottom preview displays the final sigma list of length=`steps`. 
-  Change `steps` and immediately see how your low‑point curve scales.
+  The bottom preview displays the final sigma list of length=`steps`.   
+  Change `steps` and immediately see how your low‑point curve scales.  
   (obscured by default on-load for compactness) 
 
 - 💾 **Save & Load Presets**  
