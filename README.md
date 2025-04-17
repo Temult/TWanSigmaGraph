@@ -10,7 +10,7 @@ Node will automatically extrapolate schedule to desired step count and save for 
 ## Features
 
 - 🎨 **Interactive Graph**  
-  Drag handles to shape your sigma curve.  
+  Click & Drag graph points to shape your sigma curve.  
   ➕ to add new graph point for fine tuning   
   ➖ to remove one graph point.
 
