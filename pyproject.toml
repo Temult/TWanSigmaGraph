@@ -1,12 +1,12 @@
 [project]
-name = "SigmaGraphNode"
-description = ""
-version = "0.1.0-alpha"
+name = "TWanSigmaGraph"
+description = "Interactive sigma schedule editor with graph and text input."
+version = "0.2.0-alpha"
 license = {file = "LICENSE.txt"}
-dependencies = ["# requirements.txt for SigmaGraphNode", "# This custom node requires PyTorch to create the sigma schedule tensor.", "torch>=2.6.0"]
+dependencies = ["# requirements.txt for TWanSigmaGraph", "# This custom node requires PyTorch to create the sigma schedule tensor.", "torch>=2.6.0"]
 
 [project.urls]
-Repository = "https://github.com/Temult/SigmaGraphNode"
+Repository = "https://github.com/Temult/TWanSigmaGraph"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
