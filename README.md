@@ -1,69 +1,120 @@
-# Sigma Graph Custom Node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI) and [Wan-Video](https://github.com/Wan-Video)
+# Sigma Schedule Graph Node for ComfyUI & Wan‑Video
 
-__Prototype - Node is in early development, not intended for active use.__ 
+A compact, bidirectional sigma‐schedule editor for diffusion sampling.  
+Shape a high‑resolution schedule by defining just a handful of control points—then automatically extrapolate that curve to any number of steps without typing dozens of values or dragging dozens of handles.
 
-**A compact, bidirectional editor for sigma schedules used in diffusion sampling.**
+## Why low‑point curves matter
 
-- 📈 **Interactive Graph:** Drag points on the graph to shape your sigma schedule.
-- ✍️ **Text Editing:** Edit sigma values directly in the text box – changes are auto-synced.
-- 🔁 **Apply Changes:** Click the ▼ button to apply text changes to the graph.
-- 💾 **Presets:** Save/load custom curve presets with the 💾 button.
+• Sketch your noise schedule with just a handful of points. Refine the shape quickly!
+• When you bump `steps` up to 35, 100, or more, the node interpolates your low‑point profile into a full sigma list for your sampler.  
+• No need to manually adjust dozens of numbers or sliders. Design your conceptual curve once and use for any number of steps!
 
-![screen1](https://github.com/user-attachments/assets/5de063e7-8034-4827-b48e-308af790de91)
+---
 
-> **Note:** On first load the node's UI may render incorrectly (it may appear empty). If this happens, please refresh the page until the issue is resolved. This is a known alpha-stage bug that will be addressed in future updates.
+## Features
+
+- 🎨 **Interactive Graph**  
+  Drag handles to shape your sigma curve.  
+  • ➕ to add new graph point for fine tuning 
+  • ➖ to remove one graph point.
+
+- ✍️ **Textual Workspace**  
+  The top textarea shows your control‑point y‑values.  
+  • Paste comma lists or full JSON point arrays.  
+  • Textual edits auto‑sync to the graph.
+
+- 🔄 **Dynamic Extrapolation**  
+  The bottom preview displays the final sigma list of length=`steps`. 
+  Change `steps` and immediately see how your low‑point curve scales.
+  (obscured by default on-load for compactness) 
+
+- 💾 **Save & Load Presets**  
+  Toggle save‑mode with the 💾 button, then click a slot to store or recall curves.
+
+- ℹ️ **Built‑in Help**  
+  Click the ℹ️ button for quick tips.
+
+---
+
+## Preview
+
+![Interactive Graph](https://github.com/user-attachments/assets/0e666fa7-b203-4233-9862-23ec066ed097)
+
+---
 
 ## Installation
 
-1. **Copy the Folder:**  
-   Copy this folder to your ComfyUI custom nodes directory:  
-   `ComfyUI/custom_nodes/TWanSigmaGraph`
-2. **Restart ComfyUI:**  
-   Restart ComfyUI so that it can register the new node.
-3. **Locate the Node:**  
-   In the ComfyUI interface, find **SigmaGraphNode** under the **sampling → custom** category.
+1. **Copy the Folder**  
+   Place this directory under:
+   
+   ComfyUI/custom_nodes/TWanSigmaGraph/
+   
+2. **Restart ComfyUI**  
+   Relaunch the server or reload your browser.
 
-## How to Use
+3. **Locate the Node**  
+   Find **Sigma Schedule Graph** under **sampling → custom**.
 
-![screen2](https://github.com/user-attachments/assets/571a47bb-d376-48c2-9bdc-0a70eec291ea)
+---
 
-1. **Set Steps:**  
-   Adjust the `steps` input to define the number of sampling steps. The output sigma tensor will contain `steps + 1` values.
-2. **Design Your Curve:**  
-   Use either the interactive graph or the text box to shape your sigma curve.
-3. **Apply & Sync:**  
-   - Click the ▼ button to apply the sigma values from the text box to update the graph.
-   - The graph and the text box are automatically synced.
-4. **Connect the Output:**  
-   Connect the output labeled `SIGMAS` to your preferred diffusion sampler (e.g., KSampler) that supports external sigma schedules.
-5. **Save Presets (Optional):**  
-   - Toggle the save mode using the 💾 button.
-   - Click on a preset slot to save the current curve or load a previously saved curve.
+## Usage
 
-## File Overview
+1. **Set Steps**  
+   Adjust the `steps` input—this defines how many sigma values you’ll get.
 
-| File                         | Purpose                                                                |
-|------------------------------|------------------------------------------------------------------------|
-| `__init__.py`                | Registers the node and instructs ComfyUI where to find the widget code |
-| `TWanSigmaGraph.py`          | Contains the backend logic to generate the sigma tensor schedule       |
-| `js/TWanSigmaGraphWidget.js` | Implements the custom graph widget UI (drag, sync, and presets)        |
+2. **Design Your Curve**  
+   • Edit the top text box or drag points on the graph.  
+   • The graph and text box stay in sync.
+
+3. **Adjust Density (Optional)**  
+   Click **+ / –** to add or remove handles for finer or coarser control.
+
+4. **View Final Sigmas (Optional)**  
+   Expand the node to see the full sigma list interpolated to `steps`.
+
+5. **Save Presets**  
+   • Click 💾 to enter save mode.  
+   • Click a slot to store or load a curve.
+
+6. **Info & Reset**  
+   Use the ℹ️ popup for instructions.  
+   To reset, clear the node’s cache in your browser’s `localStorage`.
+
+7. **Connect to Sampler**  
+   Plug the `SIGMAS` output into any sampler that accepts custom sigma schedules (e.g. KSampler).
+
+---
+
+## File Structure
+
+```
+TWanSigmaGraph/
+├── __init__.py                 # Node registration & widget directory
+├── TWanSigmaGraph.py           # Backend: parse & interpolate points
+└── js/
+    └── TWanSigmaGraphWidget.js # Frontend: graph UI, text sync, presets
+```
+
+---
 
 ## Troubleshooting
 
-- **Node Not Rendering Correctly:**  
-  On the first load, the node’s widget may sometimes render incorrectly (e.g., it might appear empty). Simply refresh the page until the widget appears as expected.
-- **Empty or Incorrect Presets:**  
-  Ensure that your browser’s local storage is not blocking data saves if presets aren’t showing.
+- **Blank Widget on First Load**  
+  Refresh the page—this alpha‑stage bug will be fixed soon.
 
-## Thanks
+- **Presets Not Saving**  
+  Check that `localStorage` is enabled for `127.0.0.1` in your browser.
 
-- **Realistic_Studio_930:**  
-  For introducing the concept of sigma schedules and inspiring the graph’s design.
-- **huchenlei:**  
-  For providing invaluable guidance and reviewing the JavaScript implementation.
-- **Google & OpenAI:**  
-  Special thanks to Gemini 2.5 Pro and ChatGPT, which were instrumental in refining the development process.
+- **Curve Reverts to Default**  
+  The node defaults to four points (`1.00, 0.67, 0.33, 0.00`). To clear your custom curve, delete the key `TWanSigmaGraph_last_<node.id>` in dev‑tools → Application → localStorage.
 
-## License
+---
 
-This project is released under the MIT License. See the [LICENSE.txt](LICENSE.txt) file for details.
+## Thanks & Credits
+
+- **Realistic_Studio_930** — Curve design inspiration  
+- **huchenlei** — JavaScript guidance  
+- **ComfyUI Community** — Testing & feedback  
+
+Licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
+```
