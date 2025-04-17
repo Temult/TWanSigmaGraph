@@ -1,4 +1,4 @@
-// TWanSigmaGraphWidget.js – v2.24
+// TWanSigmaGraphWidget.js – v0.1.0
 // -------------------------------
 // Companion widget for the TWanSigmaGraph node.  Draws a bi‑
 // directional sigma schedule, preview text, density controls,
