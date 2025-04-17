@@ -15,7 +15,7 @@ Shape a high‑resolution schedule by defining just a handful of control points�
 
 - 🎨 **Interactive Graph**  
   Drag handles to shape your sigma curve.  
-  ➕ to add new graph point for fine tuning 
+  ➕ to add new graph point for fine tuning   
   ➖ to remove one graph point.
 
 - ✍️ **Textual Workspace**  
